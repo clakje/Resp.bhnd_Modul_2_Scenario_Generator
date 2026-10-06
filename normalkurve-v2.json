@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0",
+  "generator": "Respirator Scenario-Generator",
+  "exportedAt": "2026-09-21T07:22:30.914Z",
+  "meta": {
+    "id": "normalkurve_v2",
+    "title": "Normalkurve v2",
+    "description": "Dette viser normale kurver ved god synkronisering",
+    "author": "Petter",
+    "learningObjectives": [
+      "Gjenkjenne god synkronisering"
+    ],
+    "answerKey": {
+      "optimalSettings": "Scenariet starter i fasit — dette ER referansebildet:\n• IPAP 12 / EPAP 5 cmH₂O (drivtrykk 7 cmH₂O)\n• FiO₂ 30 %\n• Låst i bakgrunnen: flowtrigger 1,0 L/min, cycling 25 %, stigetid 150 ms, Ti max 2,0 s, lekkasje 0\n\nDeltakeren har bare tre knapper: IPAP, EPAP og FiO₂. Oppgaven er ikke å finne fram til innstillingene, men å kjenne igjen kurvebildet god synkronisering gir — og se hva de to trykknappene gjør med det.\n\nMerk: referansen gir 5,6 ml/kg IBW, altså i underkant av målet 6–8 ml/kg. IPAP 14 lander på 7,1 ml/kg. Kurveformen er optimal ved IPAP 12; volumet er det ikke. Det er en fin diskusjon, ikke en feil i scenariet.",
+      "expectedResponse": "Måleverdier i referansebildet:\nVt 401 ml (5,6 ml/kg IBW, IBW 71 kg) · MV 6,4 L/min · RR 16/min, 100 % spontan · Ti 0,57 s · I:E 1:5,6 (Ti/Ttot 15 %) · Ppeak 12,1 · Pplat 12,1 · PEEPi 0,1 cmH₂O · asynkroni-indeks 0 % · lekkasje 0.\n\nTRYKKURVEN: rask, avrundet stigning til 12 cmH₂O uten overskyting. Blåseren henger nesten ikke etter innsatsen — P_servo − P_aw når bare 0,48 cmH₂O, så det karakteristiske startfallet som avslører for treg flowlevering er så vidt synlig. Platået holdes til syklingen ved 0,57 s, så faller trykket rent tilbake til EPAP 5.\n\nFLOWKURVEN: bratt inspiratorisk topp på 68,8 L/min 0,17 s etter triggerutslaget, deretter et jevnt eksponentielt fall. Innpustet avsluttes ved 25 % av toppflow. Ekspirasjonen har en topp på 34,4 L/min og faller med tidskonstanten τ = R × C = 7 × 0,076 = 0,53 s; flowen er tilbake på null 2,95 s ut i utpustet, nesten ett sekund før neste innsats. Ingen avkuttet ekspirasjon, ingen luftfangst (PEEPi 0,1).\n\nVOLUMKURVEN: jevn stigning til 401 ml og full retur til baseline for hver pust.\n\nSYNKRONI: dette er kjernen i scenariet. Pasienten er koblet slik at innsatsformen utledes av Ti_neural 1,0 s, som gir T_rise 0,30 s, ingen platåtid og T_decay 0,40 s. P_mus topper på 3,0 cmH₂O ved 0,24 s og er praktisk talt tilbake på null ved 0,65 s. Maskinen sykler ved 0,57 s — altså akkurat mens innsatsen ebber ut. Respiratoren slipper verken for tidlig (mens pasienten fortsatt drar) eller for sent (mens pasienten vil ut). Alle 16 pust i minuttet er pasienttrigget og flowsyklet: null bomtrigging, null autotrigging, null dobbelttrigging, asynkroni-indeks 0 %.",
+      "notes": "PEDAGOGISK PROGRESJON — deltakeren har tre knapper. Endre én om gangen og gå tilbake med Nullstill.\n\n1) IPAP. Drivtrykket er IPAP − EPAP, og volumet følger nesten lineært: IPAP 10 gir 305 ml, 12 gir 401 ml (fasit), 14 gir 503 ml, 16 gir 611 ml. Merk at kurveformen holder seg pen hele veien — synkroniseringen blir ikke dårligere av at volumet blir feil. Det er nettopp poenget: «fine kurver» og «riktig volum» er to spørsmål. Ved IPAP 9 og lavere løser lav tidevolum-alarmen ut (Vt 258 ml mot grensen 300), ved IPAP 20 og høyere den høye (840 ml mot grensen 800).\n\n2) EPAP. EPAP spiser av drivtrykket uten at IPAP røres, så knappen virker «baklengs» på volumet: EPAP 3 gir 503 ml, 5 gir 401 ml (fasit), 7 gir 305 ml, 9 gir 213 ml. Fra EPAP 8 løser lav tidevolum-alarmen ut. Ved EPAP 12 er drivtrykket nede i 0 og Vt 85 ml. Ved EPAP 14 bryter bildet sammen i modellen: autotrigging tar over med RR 144/min, Vt 4 ml og asynkroni-indeks 89 %. En kraftig demonstrasjon av at EPAP ikke er en «gratis» knapp.\n\n3) FiO₂. Har ingen effekt på kurvene — 21 % og 100 % gir nøyaktig samme Vt, Ti og trykkurve. Det er riktig: modellen regner mekanikk, ikke gassutveksling. Bruk knappen til å få fram at oksygenering og ventilasjon er to atskilte problemer.\n\nFALLGRUVER\n• Referansen ligger på 5,6 ml/kg IBW. Deltakere som leter etter «optimalt volum» finner det ved IPAP 14 (7,1 ml/kg), ikke i utgangspunktet. Kurvebildet er likevel like synkront begge steder.\n• Ti er fasistyrt av cycling, ikke av Ti max. Alle pust flowsykler ved 0,57 s, langt under Ti max 2,0 s. Ti max er et sikkerhetsnett ved lekkasje, ikke en knapp for å forme kurven — og den er uansett låst her.\n• Ved IPAP 30 slår blåserens maksimale flowkapasitet inn (Qmax 3,0 L/s = 180 L/min). Flowkurven flater av på toppen, syklingsterskelen på 25 % av toppflow nås tidlig, og Ti kollapser til 0,34 s med Vt 838 ml — lavere enn ved IPAP 29 (1404 ml). Et modellartefakt, men fysiologisk gjenkjennelig: en blåser som går i metning gir ikke mer volum av mer trykk.\n• Avkrysningen «Utled innsatsform fra Ti_neural» endrer ingenting i dette scenariet. Ti_neural 1,0 s gir utledet T_rise 0,30 / T_hold 0,00 / T_decay 0,40 — nøyaktig de samme verdiene som står lagret. Målingene er identiske med og uten. Knappen er uansett skjult for deltakeren.\n• Backup-frekvensen gjør ingenting så lenge ST står av og pasienten trigger selv.\n\nAlle tall er målt i simulatoren over 60 s stabil drift (t ≥ 40 s), med pustevariabilitet 0."
+    }
+  },
+  "initialState": {
+    "machine": {
+      "mode": "PS",
+      "ipap": 12,
+      "epap": 5,
+      "vcTidalVolume": 500,
+      "vcPeakFlow": 60,
+      "vcFlowPattern": "constant",
+      "inspPause": 0,
+      "tiSet": 1,
+      "backupRate": 12,
+      "stActive": false,
+      "fio2": 30,
+      "rr": 12,
+      "triggerMode": "flow",
+      "trigger": 1,
+      "cycling": 25,
+      "tiMax": 2,
+      "riseTime": 150,
+      "leak": 0
+    },
+    "patient": {
+      "height": 175,
+      "gender": "male",
+      "compliance": 76,
+      "resistance": 7,
+      "rrSpont": 16,
+      "pmus": 3,
+      "responsiveness": 50,
+      "responsivePmus": false,
+      "pmusOffset": 0,
+      "tiNeural": 1,
+      "kobleTiNeural": true,
+      "triseNeural": 0.3,
+      "tholdNeural": 0,
+      "tdecayNeural": 0.4,
+      "pmusExp": 0,
+      "recoil": 25,
+      "flowLimitation": 0,
+      "criticalClosingPressure": 0,
+      "flowConductance": 1,
+      "peepStenting": 0,
+      "expRatio": 1,
+      "variability": 0,
+      "cardiacArtifact": 0,
+      "stressIndex": 1,
+      "stressIndexEnabled": false,
+      "uip": 30,
+      "uipEnabled": false,
+      "airwayOpening": 0,
+      "recruitedVolume": 0,
+      "entrainmentRatio": 1,
+      "entrainmentEnabled": false
+    },
+    "alarms": {
+      "apneaDelay": 20,
+      "alarmLeak": 40,
+      "alarmLowVt": 300,
+      "alarmHighVt": 800,
+      "alarmLowRr": 0,
+      "alarmHighRr": 30,
+      "alarmHighPpeak": 40
+    }
+  },
+  "uiConfig": {
+    "visibleControls": [
+      "ipap",
+      "epap",
+      "fio2"
+    ],
+    "controls": [
+      {
+        "key": "ipap",
+        "group": "machine",
+        "label": "IPAP / inspiratorisk trykk",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 12,
+        "min": 8,
+        "max": 30,
+        "step": 1
+      },
+      {
+        "key": "epap",
+        "group": "machine",
+        "label": "EPAP / PEEP",
+        "type": "range",
+        "unit": "cmH₂O",
+        "default": 5,
+        "min": 3,
+        "max": 15,
+        "step": 1
+      },
+      {
+        "key": "fio2",
+        "group": "machine",
+        "label": "FiO₂",
+        "type": "range",
+        "unit": "%",
+        "default": 30,
+        "min": 21,
+        "max": 100,
+        "step": 1
+      }
+    ]
+  }
+}
