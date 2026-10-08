@@ -41,7 +41,7 @@
 * Ventilasjonsmodus: BPAP (trykkstøtte) (Skjult / låst)
 * IPAP / inspiratorisk trykk: 10 cmH₂O (Skjult / låst)
 * EPAP / PEEP: 5 cmH₂O (Skjult / låst)
-* Tidalvolum (VC): 500 ml (Skjult / låst)
+* Tidevolum (VC): 500 ml (Skjult / låst)
 * Inspiratorisk toppflow (VC): 60 L/min (Skjult / låst)
 * Flowmønster (VC): Firkant (Skjult / låst)
 * Inspiratorisk pause: 0.00 s (Skjult / låst)
