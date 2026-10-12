@@ -86,6 +86,7 @@
       "epap",
       "fio2",
       "cycling",
+      "triggerMode",
       "trigger",
       "riseTime",
       "apneaDelay",
@@ -133,7 +134,7 @@
       {
         "key": "cycling",
         "group": "machine",
-        "label": "Inspiratorisk avslutning (cycling)",
+        "label": "Inspiratorisk avslutning",
         "type": "range",
         "unit": "%",
         "default": 25,
@@ -142,15 +143,49 @@
         "step": 5
       },
       {
+        "key": "triggerMode",
+        "group": "machine",
+        "label": "Triggertype",
+        "type": "buttons",
+        "unit": null,
+        "default": "flow",
+        "options": [
+          {
+            "value": "flow",
+            "label": "Flowtrigger"
+          },
+          {
+            "value": "pressure",
+            "label": "Trykktrigger"
+          }
+        ]
+      },
+      {
         "key": "trigger",
         "group": "machine",
-        "label": "Triggersensitivitet (flow)",
+        "label": "Triggersensitivitet",
         "type": "range",
         "unit": "L/min",
         "default": 1.5,
         "min": 1,
         "max": 5,
-        "step": 0.5
+        "step": 0.5,
+        "modes": {
+          "flow": {
+            "label": "Triggersensitivitet (flow)",
+            "unit": "L/min",
+            "min": 1,
+            "max": 5,
+            "step": 0.5
+          },
+          "pressure": {
+            "label": "Triggersensitivitet (trykk)",
+            "unit": "cmH₂O",
+            "min": 0.2,
+            "max": 5,
+            "step": 0.1
+          }
+        }
       },
       {
         "key": "riseTime",

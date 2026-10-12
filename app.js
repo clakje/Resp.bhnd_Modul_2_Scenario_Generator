@@ -110,6 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verdiene scenariet startet med — brukes av Nullstill-knappen.
     let initialParamState = {};
 
+    // Simulatoren husker én terskel per triggertype. paramState har bare den aktive,
+    // så begge tas vare på her for at Nullstill også skal tilbakestille den andre.
+    let initialTriggerThresholds = null;
+
     function num(key, fallback) {
         const v = parseFloat(paramState[key]);
         return Number.isFinite(v) ? v : fallback;
@@ -311,6 +315,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         commit();
         initialParamState = Object.assign({}, paramState);
+        initialTriggerThresholds = {
+            flow: simulator.settings.triggerFlow,
+            pressure: simulator.settings.triggerPressure
+        };
 
         // ---- 4b. Metadata ------------------------------------------------------
         renderMetadata(meta);
@@ -478,35 +486,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let syncDisabled = () => {};
 
         if (def.type === 'range') {
-            const min = Number(def.min != null ? def.min : 0);
-            const max = Number(def.max != null ? def.max : 100);
-            const step = Number(def.step != null ? def.step : 1);
-            const decimals = decimalsFor(step);
+            // Grensene og enheten kan avhenge av triggertypen (def.modes), så de ligger
+            // i variabler som configure() setter på nytt når typen byttes.
+            let min, max, step, decimals, rangeUnit;
 
             const wrapper = document.createElement('div');
             wrapper.className = 'slider-wrapper';
-
-            const name = def.label || key;
 
             const minus = document.createElement('button');
             minus.type = 'button';
             minus.className = 'step-btn';
             minus.textContent = '−';
-            minus.setAttribute('aria-label', `Senk ${name}`);
 
             const input = document.createElement('input');
             input.type = 'range';
-            input.min = String(min);
-            input.max = String(max);
-            input.step = String(step);
-            input.value = String(clamp(toNumber(paramState[key], def.default), min, max));
-            input.setAttribute('aria-label', name);
 
             const plus = document.createElement('button');
             plus.type = 'button';
             plus.className = 'step-btn';
             plus.textContent = '+';
-            plus.setAttribute('aria-label', `Øk ${name}`);
 
             wrapper.appendChild(minus);
             wrapper.appendChild(input);
@@ -515,11 +513,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const limits = document.createElement('div');
             limits.className = 'slider-limits';
-            limits.innerHTML = `<span>${min}${escapeHtml(unit)}</span><span>${max}${escapeHtml(unit)}</span>`;
             card.appendChild(limits);
 
+            const configure = () => {
+                const spec = rangeSpec(def);
+                min = Number(spec.min != null ? spec.min : 0);
+                max = Number(spec.max != null ? spec.max : 100);
+                step = Number(spec.step != null ? spec.step : 1);
+                decimals = decimalsFor(step);
+                rangeUnit = spec.unit ? ' ' + spec.unit : '';
+
+                const name = spec.label || key;
+                label.textContent = name;
+                minus.setAttribute('aria-label', `Senk ${name}`);
+                plus.setAttribute('aria-label', `Øk ${name}`);
+                input.setAttribute('aria-label', name);
+
+                input.min = String(min);
+                input.max = String(max);
+                input.step = String(step);
+                input.value = String(clamp(toNumber(paramState[key], spec.default), min, max));
+                limits.innerHTML = `<span>${min}${escapeHtml(rangeUnit)}</span><span>${max}${escapeHtml(rangeUnit)}</span>`;
+            };
+            configure();
+
             setPill = () => {
-                const text = Number(input.value).toFixed(decimals) + unit;
+                const text = Number(input.value).toFixed(decimals) + rangeUnit;
                 pill.textContent = text;
                 input.setAttribute('aria-valuetext', text);   // skjermleser leser verdien med enhet
             };
@@ -548,7 +567,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 plus.disabled = !on;
                 card.classList.toggle('control-disabled', !on);
             };
-            card.__setValue = v => { input.value = String(clamp(toNumber(v, min), min, max)); setPill(); };
+            card.__setValue = v => {
+                configure();
+                input.value = String(clamp(toNumber(v, min), min, max));
+                setPill();
+            };
+            if (def.modes) card.__applyMode = () => { configure(); setPill(); };
 
         } else if (def.type === 'checkbox') {
             // Avkrysningsboksen bærer selv etiketten: ingen egen tittel eller PÅ/AV-merke.
@@ -593,6 +617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 select.addEventListener('change', () => {
                     paramState[key] = coerceLike(select.value, options);
+                    if (key === 'triggerMode') onTriggerModeChanged();
                     setPill();
                     commit();
                 });
@@ -613,6 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.dataset.value = String(o.value);
                     btn.addEventListener('click', () => {
                         paramState[key] = o.value;
+                        if (key === 'triggerMode') onTriggerModeChanged();
                         buttons.forEach(b => b.classList.toggle('active', b === btn));
                         setPill();
                         commit();
@@ -677,9 +703,36 @@ document.addEventListener('DOMContentLoaded', () => {
         return hit ? hit.value : raw;
     }
 
+    /**
+     * Definisjonen en range-kontroll skal bruke nå. Med `modes` (bare for trigger)
+     * overstyrer oppføringen for gjeldende triggertype etikett, enhet og grenser:
+     *   "modes": { "flow": { "unit": "L/min", "min": 1, ... }, "pressure": { ... } }
+     */
+    function rangeSpec(def) {
+        const variant = def.modes && def.modes[paramState.triggerMode];
+        return variant ? Object.assign({}, def, variant) : def;
+    }
+
+    /**
+     * Triggerfølsomheten betyr L/min ved flowtrigger og cmH₂O ved trykktrigger.
+     * Ved bytte av type hentes den nye typens egen terskel fra simulatoren, som
+     * husker begge, i stedet for å tolke sliderverdien i feil enhet — slik
+     * generatoren gjør det. Må kalles før commit().
+     */
+    function onTriggerModeChanged() {
+        const S = simulator.settings;
+        paramState.trigger = (paramState.triggerMode === 'pressure') ? S.triggerPressure : S.triggerFlow;
+        const card = controlsContainer.querySelector('.control-card[data-key="trigger"]');
+        if (card && card.__applyMode) card.__applyMode();
+    }
+
     /** Setter alle kontroller tilbake til scenariets startverdier. */
     function resetToScenario() {
         Object.keys(initialParamState).forEach(k => { paramState[k] = initialParamState[k]; });
+        if (initialTriggerThresholds) {
+            simulator.settings.triggerFlow = initialTriggerThresholds.flow;
+            simulator.settings.triggerPressure = initialTriggerThresholds.pressure;
+        }
         document.querySelectorAll('#dynamic-controls .control-card[data-key], #alarm-controls .control-card[data-key]').forEach(card => {
             const key = card.dataset.key;
             if (card.__setEnabled) {
